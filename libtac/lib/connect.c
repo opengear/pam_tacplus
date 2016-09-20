@@ -34,6 +34,50 @@
 /* Pointer to TACACS+ connection timeout */
 int tac_timeout = 5;
 
+/* Connects to first reachable TACACS server in the config */
+int tac_connect_config(const struct tac_config *config, struct addrinfo *bindaddr) {
+    const struct tac_config_server *cs;
+    struct addrinfo hints;
+    int fd;
+
+    if (!config || !config->nservers) {
+        TACSYSLOG((LOG_ERR, "%s: no TACACS+ servers defined", __FUNCTION__))
+	errno = ENOENT;
+	return LIBTAC_STATUS_CONN_ERR;
+    }
+
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+
+    fd = LIBTAC_STATUS_CONN_ERR;
+    for (cs = config->server; cs < config->server + config->nservers; ++cs) {
+        struct addrinfo *ais, *ai;
+	int rv;
+	char *service = cs->service ? cs->service : "49";
+
+	rv = getaddrinfo(cs->name, service, &hints, &ais);
+	if (rv == 0) {
+	    for (ai = ais; ai; ai = ai->ai_next) {
+		fd = tac_connect_single(ai, cs->secret, bindaddr, tac_timeout);
+		if (fd >= 0) {
+		    TACSYSLOG((LOG_INFO, "connected to '%s:%s'", cs->name, service))
+		    break;
+		}
+	    }
+	    freeaddrinfo(ais);
+	    if (fd >= 0) {
+		break;
+	    }
+	} else {
+	    TACSYSLOG((LOG_ERR, "%s: '%s:%s': %s", __FUNCTION__,
+	        cs->name, service, gai_strerror(rv)))
+	    fd = LIBTAC_STATUS_CONN_ERR;
+	}
+    }
+    return fd;
+}
+
 /* Returns file descriptor of open connection
    to the first available server from list passed
    in server table.

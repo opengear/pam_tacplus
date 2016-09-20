@@ -174,6 +174,7 @@ int tacacs_get_password (pam_handle_t * pamh, int flags
 int _pam_parse (int argc, const char **argv) {
     int ctrl = 0;
     const char *current_secret = NULL;
+    struct tac_config *config = NULL;
 
     /* otherwise the list will grow with each call */
     memset(tac_srv, 0, sizeof(tacplus_server_t) * TAC_PLUS_MAXSERVERS);
@@ -275,6 +276,49 @@ int _pam_parse (int argc, const char **argv) {
         } else {
             _pam_log (LOG_WARNING, "unrecognized option: %s", *argv);
         }
+    }
+
+    config = tac_config_load();
+    if (config) {
+	struct tac_config_server *cs;
+	struct tac_config_config *cc;
+
+	for (cs = config->server; cs < config->server + config->nservers; ++cs){
+	    struct addrinfo hints, *ais, *ai;
+	    int rv;
+
+	    memset(&hints, 0, sizeof hints);
+	    hints.ai_family = AF_UNSPEC;  /* use IPv4 or IPv6, whichever */
+	    hints.ai_socktype = SOCK_STREAM;
+
+	    if ((rv = getaddrinfo(cs->name, cs->service, &hints, &ais)) == 0) {
+		for (ai = ais; ai; ai = ai->ai_next) {
+		    if (tac_srv_no < TAC_PLUS_MAXSERVERS) {
+		        tac_srv[tac_srv_no].addr = ai;
+		        tac_srv[tac_srv_no].key = cs->secret
+						  ? strdup(cs->secret)
+						  : current_secret;
+		        tac_srv_no++;
+		    } else {
+			_pam_log(LOG_ERR, "too many addresses, skipping '%s'",
+			  cs->name);
+		    }
+		}
+	        /* deliberately don't free ais (XXX leak) */
+	    }
+	}
+	for (cc = config->config; cc < config->config + config->nconfig; ++cc) {
+	    if (strcmp(cc->key, "acct_server") == 0 && !tac_srv_no) {
+	        _pam_log (LOG_ERR, "%s:%d: unsupported option '%s'", config->path, cc->lineno, cc->key);
+	    }
+	    else if (strcmp(cc->key, "login") == 0) {
+	        xstrcpy(tac_login, cc->value, sizeof(tac_login));
+	    }
+	    else if (strcmp(cc->key, "service_override") == 0) {
+	        xstrcpy(tac_service, cc->value, sizeof(tac_service));
+	    }
+	    /* handle other options here */
+	}
     }
 
     if (ctrl & PAM_TAC_DEBUG) {

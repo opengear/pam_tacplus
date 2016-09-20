@@ -135,6 +135,29 @@ extern int tac_readtimeout_enable;
 /* connect.c */
 extern int tac_timeout;
 
+struct tac_config {
+    char *path;
+    struct tac_config_server {
+	int lineno;
+	char *name;
+	char *service;
+	char *secret;	/* may be NULL */
+    } *server;
+    unsigned int nservers;
+    struct tac_config_config {
+	int lineno;
+        char *key;
+	char *value;	/* may be NULL */
+    } *config;
+    unsigned int nconfig;
+};
+
+struct tac_config *tac_config_load(void);
+struct tac_config *_tac_config_readfile(const char *path);
+void  _tac_config_apply(const struct tac_config *config);
+void tac_config_free(struct tac_config *);
+
+int tac_connect_config(const struct tac_config *, struct addrinfo *);
 int tac_connect(struct addrinfo **, char **, int);
 int tac_connect_single(const struct addrinfo *, const char *, struct addrinfo *, int);
 char *tac_ntop(const struct sockaddr *);

@@ -29,6 +29,7 @@ libtac/lib/authen_r.c \
 libtac/lib/authen_s.c \
 libtac/lib/author_r.c \
 libtac/lib/author_s.c \
+libtac/lib/config.c \
 libtac/lib/connect.c \
 libtac/lib/cont_s.c \
 libtac/lib/crypt.c \
