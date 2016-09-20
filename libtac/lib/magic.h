@@ -23,6 +23,10 @@
 
 #include "libtac.h"
 
+/* Avoid collision with other libraries */
+#define magic_init	_libtac_magic_init
+#define magic		_libtac_magic
+
 __BEGIN_DECLS
 void magic_init __P((void));	/* Initialize the magic number generator */
 u_int32_t magic __P((void));	/* Returns the next magic number */

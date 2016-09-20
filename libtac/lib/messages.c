@@ -19,13 +19,23 @@
  * See `CHANGES' file for revision history.
  */
 
+__attribute__((__visibility__("hidden"))) const
 char *protocol_err_msg = "(Protocol error)";
+__attribute__((__visibility__("hidden"))) const
 char *authen_syserr_msg = "(Authentication system error)";
+__attribute__((__visibility__("hidden"))) const
 char *author_ok_msg = "(Service granted)";
+__attribute__((__visibility__("hidden"))) const
 char *author_fail_msg = "(Service not allowed)";
+__attribute__((__visibility__("hidden"))) const
 char *author_err_msg = "(Service not allowed. Server error)";
+__attribute__((__visibility__("hidden"))) const
 char *author_syserr_msg = "(Authorization system error)";
+__attribute__((__visibility__("hidden"))) const
 char *acct_ok_msg = "(Accounted ok)";
+__attribute__((__visibility__("hidden"))) const
 char *acct_fail_msg = "(Accounting failed)";
+__attribute__((__visibility__("hidden"))) const
 char *acct_err_msg = "(Accounting failed. Server error)";
+__attribute__((__visibility__("hidden"))) const
 char *acct_syserr_msg = "(Accounting system error)";

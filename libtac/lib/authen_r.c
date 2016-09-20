@@ -21,6 +21,7 @@
 
 #include "xalloc.h"
 #include "libtac.h"
+#include "xalloc.h"
 #include "messages.h"
 
 /* reads packet from TACACS+ server; returns:

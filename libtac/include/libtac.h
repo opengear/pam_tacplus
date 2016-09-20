@@ -153,9 +153,6 @@ char *tac_acct_flag2str(int);
 int tac_acct_send(int, int, const char *, char *, char *,
     struct tac_attrib *);
 int tac_acct_read(int, struct areply *);
-void *xcalloc(size_t, size_t);
-void *xrealloc(void *, size_t);
-char *xstrcpy(char *, const char *, size_t);
 char *_tac_check_header(HDR *, int);
 int tac_author_send(int, const char *, char *, char *,
     struct tac_attrib *);

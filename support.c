@@ -26,6 +26,7 @@
 
 #include "support.h"
 #include "pam_tacplus.h"
+#include "libtac/lib/xalloc.h"
 
 #include <stdlib.h>
 #include <string.h>

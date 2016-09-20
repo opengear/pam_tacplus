@@ -33,6 +33,11 @@ typedef struct {
     unsigned char digest[16]; /* actual digest after MD5Final call */
 } MD5_CTX;
 
+/* Avoid collision with other libraries */
+#define MD5Init			_libtac_MD5Init
+#define MD5Update		_libtac_MD5Update
+#define MD5Final		_libtac_MD5Final
+
 __BEGIN_DECLS
 void MD5Init __P((MD5_CTX*));
 void MD5Update __P((MD5_CTX*, unsigned char*, UINT4));

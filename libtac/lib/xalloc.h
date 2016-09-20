@@ -22,12 +22,19 @@
 #ifndef _XALLOC_H
 #define _XALLOC_H
 
+/* Avoid collision with other libraries */
+#define xcalloc		_libtac_xcalloc
+#define xrealloc	_libtac_xrealloc
+#define xstrdup		_libtac_xstrdup
+#define xstrcpy		_libtac_xstrcpy
+
 #include "libtac.h"
 
 __BEGIN_DECLS
 extern void *xcalloc(size_t nmemb, size_t size);
 extern void *xrealloc(void *ptr, size_t size);
 extern char *xstrdup(const char *s);
+extern char *xstrcpy(char *dst, const char *src, size_t dst_size);
 __END_DECLS
 
 #endif
