@@ -159,7 +159,7 @@ int _pam_account(pam_handle_t *pamh, int argc, const char **argv,
         return PAM_AUTH_ERR;
     }
     if(*tac_protocol == '\0') {
-        _pam_log (LOG_ERR, "ACC: TACACS+ protocol type not configured (IGNORED)");
+        _pam_log (LOG_DEBUG, "ACC: TACACS+ protocol type not configured (IGNORED)");
     }
 
     /* when this module is called from within pppd or other
@@ -570,7 +570,7 @@ int pam_sm_acct_mgmt (pam_handle_t * pamh, int flags,
         return PAM_AUTH_ERR;
     }
     if(!*tac_protocol) {
-        _pam_log (LOG_ERR, "SM: TACACS+ protocol type not configured (IGNORED)");
+        _pam_log (LOG_DEBUG, "SM: TACACS+ protocol type not configured (IGNORED)");
     }
 
     tac_add_attrib(&attr, "service", tac_service);
