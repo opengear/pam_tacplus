@@ -136,6 +136,10 @@ int _pam_account(pam_handle_t *pamh, int argc, const char **argv,
         syslog(LOG_DEBUG, "%s: tac_srv_no=%d", __FUNCTION__, tac_srv_no);
     }
 
+    if (tac_authonly) {
+        return PAM_SUCCESS;
+    }
+
     if ((user = _pam_get_user(pamh)) == NULL)
         return PAM_USER_UNKNOWN;
 

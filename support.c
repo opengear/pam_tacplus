@@ -37,6 +37,7 @@ int tac_srv_no = 0;
 char tac_service[64];
 char tac_protocol[64];
 char tac_prompt[64];
+int tac_authonly = 0;
 
 void _pam_log(int err, const char *format,...) {
     char msg[256];
@@ -307,6 +308,7 @@ int _pam_parse (int argc, const char **argv) {
 	        /* deliberately don't free ais (XXX leak) */
 	    }
 	}
+	tac_authonly = 0; /* default to do accounting in addition to authentication and authorization */
 	for (cc = config->config; cc < config->config + config->nconfig; ++cc) {
 	    if (strcmp(cc->key, "acct_server") == 0 && !tac_srv_no) {
 	        _pam_log (LOG_ERR, "%s:%d: unsupported option '%s'", config->path, cc->lineno, cc->key);
@@ -316,6 +318,9 @@ int _pam_parse (int argc, const char **argv) {
 	    }
 	    else if (strcmp(cc->key, "service_override") == 0) {
 	        xstrcpy(tac_service, cc->value, sizeof(tac_service));
+	    }
+	    else if (strcmp(cc->key, "auth_only") == 0) {
+		tac_authonly = 1;
 	    }
 	    /* handle other options here */
 	}
