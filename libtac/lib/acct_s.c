@@ -97,7 +97,7 @@ int tac_acct_send(int fd, int type, const char *user, char *tty,
 
     /* allocate packet */
     pkt=(u_char *) xcalloc(1, TAC_ACCT_REQ_FIXED_FIELDS_SIZE);
-    pkt_len=sizeof(tb);
+    pkt_len=TAC_ACCT_REQ_FIXED_FIELDS_SIZE;
 
     /* fill attribute length fields */
     a = attr;
