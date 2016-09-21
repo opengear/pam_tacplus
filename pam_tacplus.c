@@ -53,6 +53,23 @@ static tacplus_server_t active_server;
 /* accounting task identifier */
 static short int task_id = 0;
 
+#define ADMIN_PRIV_LVL 12
+#define ADMIN_GROUP_NAME "admin"
+#define GROUP_ENV "OG-GROUPS"
+void add_group_membership(const char *group, char **groups)
+{
+	size_t len = strlen(group) + strlen(",");
+	size_t oldlen = (*groups == NULL) ? 0 : strlen(*groups);
+	char *p = realloc(*groups, oldlen + len + 1);
+	if (p == NULL) {
+		syslog(LOG_ERR, "%s: add group failed %s", __FUNCTION__, group);
+		return;
+	}
+	*groups = p;
+	(*groups)[oldlen] = '\0';
+	strcat(*groups, group);
+	strcat(*groups, ",");
+}
 
 /* Helper functions */
 int _pam_send_account(int tac_fd, int type, const char *user, char *tty,
@@ -623,6 +640,9 @@ int pam_sm_acct_mgmt (pam_handle_t * pamh, int flags,
 
     status = PAM_SUCCESS;
 
+    char *groups = NULL;
+    const char *grpattr = (tac_grpattr != NULL) ? tac_grpattr : "GROUPNAME";
+
     attr = arep.attr;
     while (attr != NULL)  {
         char attribute[attr->attr_len];
@@ -648,6 +668,22 @@ int pam_sm_acct_mgmt (pam_handle_t * pamh, int flags,
             if (ctrl & PAM_TAC_DEBUG)
                 syslog(LOG_DEBUG, "%s: returned attribute `%s%s' from server", __FUNCTION__, attribute, value);
 
+            /* Get our priv-lvl attributes */
+            if (!(ctrl & PAM_TAC_IGNOREPRIVLVL) && strncmp(attribute, "PRIV_LVL", 8) == 0) {
+                /* If our priv level is >= ADMIN_PRIV_LVL, we make ourselves
+                 * part of the admin group
+                 */
+                if (strlen(value) > 1 && atoi(value + 1) >= ADMIN_PRIV_LVL) {
+                    add_group_membership(ADMIN_GROUP_NAME, &groups);
+                }
+            }
+            /* Get explicit group membership */
+            if (strncasecmp(attribute, grpattr, strlen(grpattr)) == 0) {
+                if (strlen(value) > 1) {
+                    add_group_membership(value + 1, &groups);
+                }
+            }
+
             /* make returned attributes available for other PAM modules via PAM environment */
             if (pam_putenv(pamh, strncat(attribute, value, strlen(value))) != PAM_SUCCESS)
                 syslog(LOG_WARNING, "%s: unable to set PAM environment", __FUNCTION__);
@@ -656,6 +692,24 @@ int pam_sm_acct_mgmt (pam_handle_t * pamh, int flags,
             syslog(LOG_WARNING, "%s: invalid attribute `%s', no separator", __FUNCTION__, attr->attr);
         }
         attr = attr->next;
+    }
+
+    /* Add our default group now */
+    if (tac_defaultgrp != NULL) {
+        add_group_membership(tac_defaultgrp, &groups);
+    }
+
+    if (groups != NULL) {
+        if (ctrl & PAM_TAC_DEBUG) {
+            syslog(LOG_WARNING, "%s: groups %s", __FUNCTION__, groups);
+        }
+	char *groupenv = NULL;
+	asprintf(&groupenv, "%s=%s", GROUP_ENV, groups);
+	if (groupenv != NULL) {
+            pam_putenv(pamh, groupenv);
+            free(groups);
+            free(groupenv);
+        }
     }
 
     /* free returned attributes */

@@ -38,6 +38,8 @@ extern int tac_srv_no;
 extern char tac_service[64];
 extern char tac_protocol[64];
 extern char tac_prompt[64];
+extern char *tac_grpattr;
+extern char *tac_defaultgrp;
 extern int tac_authonly;
 
 int _pam_parse (int, const char **);

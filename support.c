@@ -37,6 +37,10 @@ int tac_srv_no = 0;
 char tac_service[64];
 char tac_protocol[64];
 char tac_prompt[64];
+char *tac_grpattr = NULL;
+
+char *tac_defaultgrp = NULL;
+
 int tac_authonly = 0;
 
 void _pam_log(int err, const char *format,...) {
@@ -313,17 +317,29 @@ int _pam_parse (int argc, const char **argv) {
 	    if (strcmp(cc->key, "acct_server") == 0 && !tac_srv_no) {
 	        _pam_log (LOG_ERR, "%s:%d: unsupported option '%s'", config->path, cc->lineno, cc->key);
 	    }
+	    else if (strcmp(cc->key, "pam_member_attribute") == 0) {
+	        free(tac_grpattr);
+		tac_grpattr = cc->value ? strdup(cc->value) : NULL;
+	    }
 	    else if (strcmp(cc->key, "login") == 0) {
 	        xstrcpy(tac_login, cc->value, sizeof(tac_login));
 	    }
 	    else if (strcmp(cc->key, "service_override") == 0) {
 	        xstrcpy(tac_service, cc->value, sizeof(tac_service));
 	    }
+	    else if (strcmp(cc->key, "default_group") == 0) {
+	        free(tac_defaultgrp);
+		tac_defaultgrp = xstrdup(cc->value);
+	    }
 	    else if (strcmp(cc->key, "auth_only") == 0) {
 		tac_authonly = 1;
 	    }
 	    /* handle other options here */
 	}
+    }
+
+    if (access("/etc/config/.tacplus_ignore_priv_lvl", F_OK) == 0) {
+        ctrl |= PAM_TAC_IGNOREPRIVLVL;
     }
 
     if (ctrl & PAM_TAC_DEBUG) {
