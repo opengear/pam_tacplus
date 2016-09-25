@@ -48,6 +48,7 @@ libtac/lib/xalloc.h \
 $(libtac_include_HEADERS)
 libtac_la_CFLAGS = $(AM_CFLAGS) -I $(top_srcdir)/libtac/include
 libtac_la_LDFLAGS = -version-info 2:0:0 -shared
+libtac_la_CPPFLAGS = -DPATH_TAC_CLIENT_CONF=@PATH_TAC_CLIENT_CONF@
 
 moduledir = @pamdir@
 module_LTLIBRARIES = pam_tacplus.la

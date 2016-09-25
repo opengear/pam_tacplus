@@ -5,14 +5,17 @@
 #include <sys/stat.h>
 #include "xalloc.h"
 
-#define SYSCONFDIR "/etc/config"
-#define PATH_TAC_CLIENT_CONF  SYSCONFDIR "/tac_client.conf"
+#define xstr(s) str(s)
+#define str(s) #s
+#ifndef PATH_TAC_CLIENT_CONF
+#define PATH_TAC_CLIENT_CONF  "/etc/config/tac_client.conf"
+#endif
 
 struct tac_config * tac_config_load(void)
 {
     struct tac_config *config;
 
-    config = _tac_config_readfile(PATH_TAC_CLIENT_CONF);
+    config = _tac_config_readfile(xstr(PATH_TAC_CLIENT_CONF));
     if (config) {
         _tac_config_apply(config);
     }

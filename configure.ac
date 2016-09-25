@@ -93,6 +93,10 @@ AC_ARG_ENABLE(doc, AS_HELP_STRING([--disable-doc], [do not build docs]))
 AM_CONDITIONAL(DOC, test "x$enable_doc" != "xno")
 
 dnl --------------------------------------------------------------------
+dnl Set location for library runtime config file.
+AC_ARG_VAR(PATH_TAC_CLIENT_CONF, "Absolute path to runtime config file.")
+
+dnl --------------------------------------------------------------------
 dnl Generate made files
 AC_CONFIG_FILES([Makefile
 		 libtac.pc
