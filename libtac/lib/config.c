@@ -22,6 +22,72 @@ struct tac_config * tac_config_load(void)
     return config;
 }
 
+/*
+ * input is a string like [::1]:123, which will be mangled into [::1]\0  and
+ * port will be set to point to the port section of the input string, iff found.
+ */
+int split_port_ipv6(char *input, char **port)
+{
+        char *open_sb, *close_sb, *port_delim;
+
+        open_sb = strchr(input, '[');
+        if (!open_sb) {
+                return 1; /* not a valid ipv6 address. */
+        }
+
+        /* check for matching ']' */
+        close_sb = strchr(open_sb, ']');
+        if (!close_sb) {
+                return 1; /* not a valid ipv6 address. */
+        }
+
+        /* mangle input; terminate input string after address */
+        close_sb++;
+        *close_sb = '\0';
+
+        /* look for a port */
+        port_delim = strchr(close_sb, ':');
+        if (port_delim && strlen(input) > (port_delim - open_sb)) {
+                /* delimiter found AND there is something after it. */
+                *port = port_delim + 1;
+        }
+        /* else: no port delimiter, or no port. leave *port untouched. */
+        return 0;
+}
+
+/*
+ * input is a string like 1.2.3.4:567, which will be mangled into 1.2.3.4\0 and
+ * port will be set to point to the port section of the input string, iff found.
+ */
+int split_port(char *input, char **port)
+{
+        char *delim;
+
+        /* first try ipv6 */
+        if (0 == split_port_ipv6(input, port)) {
+                return 0; /* success! */
+        }
+
+        /* else try ipv4 or hostname */
+        delim = strchr(input, ':');
+
+        if (delim && delim != input) {
+                /* input like "1.2.3.4:567" or "1.2.3.4:" */
+                if (strlen(input) > (delim - input + 1)) {
+                        /* there's something after the delimiter */
+                        *port = delim + 1;
+                }
+                /* else: there is nothing after the ':' so leave port alone */
+
+                *delim = '\0'; /* terminate input string at delimiter */
+        } else if (delim == input) {
+                // no server specified. input like ":123"
+                return 1;
+        }
+        // else: input like "1.2.3.4", leave it alone.
+        return 0;
+}
+
 struct tac_config * _tac_config_readfile(const char *path)
 {
     FILE *f;
@@ -92,7 +158,7 @@ struct tac_config * _tac_config_readfile(const char *path)
 	    ret->server = xrealloc(ret->server, ret->nservers * sizeof *ret->server);
 	    server = &ret->server[ret->nservers - 1];
 	    server->name = xstrdup(value);
-	    server->service = xstrdup("49");
+	    split_port(server->name, &server->service);
 	    server->secret = xstrdup(default_secret);
 	    server->lineno = lineno;
 	}
