@@ -158,6 +158,7 @@ struct tac_config * _tac_config_readfile(const char *path)
 	    ret->server = xrealloc(ret->server, ret->nservers * sizeof *ret->server);
 	    server = &ret->server[ret->nservers - 1];
 	    server->name = xstrdup(value);
+	    server->service = xstrdup("49"); /* initialize to default value */
 	    split_port(server->name, &server->service);
 	    server->secret = xstrdup(default_secret);
 	    server->lineno = lineno;
