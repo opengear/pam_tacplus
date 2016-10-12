@@ -41,10 +41,6 @@ int split_port_ipv6(char *input, char **port)
                 return 1; /* not a valid ipv6 address. */
         }
 
-        /* mangle input; terminate input string after address */
-        close_sb++;
-        *close_sb = '\0';
-
         /* look for a port */
         port_delim = strchr(close_sb, ':');
         if (port_delim && strlen(input) > (port_delim - open_sb)) {
@@ -52,6 +48,11 @@ int split_port_ipv6(char *input, char **port)
                 *port = port_delim + 1;
         }
         /* else: no port delimiter, or no port. leave *port untouched. */
+
+        /* mangle input; terminate input string after address */
+        close_sb++;
+        *close_sb = '\0';
+
         return 0;
 }
 
